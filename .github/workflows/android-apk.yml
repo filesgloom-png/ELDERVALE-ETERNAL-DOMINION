@@ -1,0 +1,103 @@
+name: ELDERVALE Eternal Dominion Android CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eldervale-eternal-dominion-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-build:
+    name: Validate Godot project and export Android ARM64
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GODOT_VERSION: 4.5.1
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK tools
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
+
+      - name: Install Android SDK packages
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Godot 4.5.1 and export templates
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.5.1
+          use-dotnet: false
+          include-templates: true
+
+      - name: Verify toolchain
+        run: |
+          godot --version
+          java -version
+          sdkmanager --list_installed
+
+      - name: Configure Android debug signing
+        run: |
+          mkdir -p "$HOME/.android" "$HOME/.config/godot"
+          keytool -genkeypair -v -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
+          cat > "$HOME/.config/godot/editor_settings-4.tres" <<'EOF'
+          [gd_resource type="EditorSettings" format=3]
+          [resource]
+          export/android/android_sdk_path = "/usr/local/lib/android/sdk"
+          export/android/java_sdk_path = "__JAVA_HOME__"
+          export/android/debug_keystore = "$HOME/.android/debug.keystore"
+          export/android/debug_keystore_user = "androiddebugkey"
+          export/android/debug_keystore_pass = "android"
+          EOF
+          sed -i "s|\$HOME|$HOME|g" "$HOME/.config/godot/editor_settings-4.tres"
+          sed -i "s|__JAVA_HOME__|$JAVA_HOME|g" "$HOME/.config/godot/editor_settings-4.tres"
+
+      - name: Import and validate project
+        run: |
+          set -o pipefail
+          godot --headless --path . --editor --import --quit
+          godot --headless --path . --quit-after 3 --verbose 2>&1 | tee /tmp/eldervale-smoke.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script|Invalid call\. Nonexistent function|Attempt to call function" /tmp/eldervale-smoke.log; then
+            echo "Godot runtime smoke test reported script errors."
+            exit 1
+          fi
+
+      - name: Export Android ARM64 debug APK
+        run: |
+          mkdir -p build
+          godot --headless --path . --export-debug "Android" "build/ELDERVALE-ETERNAL-DOMINION-debug.apk"
+
+      - name: Verify APK output
+        run: |
+          test -s build/ELDERVALE-ETERNAL-DOMINION-debug.apk
+          file build/ELDERVALE-ETERNAL-DOMINION-debug.apk
+          ls -lh build/ELDERVALE-ETERNAL-DOMINION-debug.apk
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ELDERVALE-ETERNAL-DOMINION-Android-ARM64-debug
+          path: build/ELDERVALE-ETERNAL-DOMINION-debug.apk
+          if-no-files-found: error
+          retention-days: 14
