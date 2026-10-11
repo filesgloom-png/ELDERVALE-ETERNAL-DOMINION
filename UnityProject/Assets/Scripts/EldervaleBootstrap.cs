@@ -65,6 +65,23 @@ public class EldervaleBootstrap : MonoBehaviour
         for(int i=0;i<14;i++) Cube("Mossy Stone",new Vector3((i*7)%21-10,-.02f,(i*11)%23-11),new Vector3(.7f,.16f,.7f),new Color(.26f,.33f,.27f));
         Cube("Obelisk",new Vector3(0,2.2f,-8),new Vector3(1,4.4f,1),new Color(.08f,.17f,.28f));
         var glow=new GameObject("Arcane Glow").AddComponent<Light>(); glow.type=LightType.Point; glow.color=new Color(.12f,.42f,1); glow.intensity=5; glow.range=12; glow.transform.position=new Vector3(0,3,-7);
+        // Ancient runic floor inlays and broken gateway silhouettes.
+        for(int i=0;i<3;i++)
+        {
+            var ring=GameObject.CreatePrimitive(PrimitiveType.Cylinder); ring.name="Runic Floor Inlay"; ring.transform.position=new Vector3(0,-.035f+i*.008f,-7); ring.transform.localScale=new Vector3(3.4f+i*1.45f,.025f,3.4f+i*1.45f);
+            var rr=ring.GetComponent<Renderer>(); rr.material=new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard")); rr.material.color=new Color(.04f,.24f,.42f,.72f); if(rr.material.HasProperty("_EmissionColor")) { rr.material.EnableKeyword("_EMISSION"); rr.material.SetColor("_EmissionColor",new Color(.02f,.18f,.65f)); } ring.GetComponent<Collider>().enabled=false;
+        }
+        for(int i=0;i<6;i++)
+        {
+            float x=(i%2==0?-1:1)*(18+(i/2)*3); float z=-14+(i%3)*13;
+            Cube("Ruined Watch Pillar",new Vector3(x,1.8f,z),new Vector3(1.2f,3.6f,1.2f),new Color(.17f,.21f,.25f));
+            Cube("Pillar Crown",new Vector3(x,3.7f,z),new Vector3(1.55f,.28f,1.55f),new Color(.29f,.31f,.34f));
+        }
+        for(int i=0;i<8;i++)
+        {
+            float a=i*Mathf.PI/4f; Vector3 p=new Vector3(Mathf.Cos(a)*8,.05f,Mathf.Sin(a)*8);
+            var shard=Cube("Arcane Ground Shard",p,new Vector3(.12f,.12f,1.15f),new Color(.12f,.48f,.8f)); shard.transform.rotation=Quaternion.Euler(0,-a*Mathf.Rad2Deg,0);
+        }
     }
 
     GameObject Cube(string name, Vector3 pos, Vector3 scale, Color color)
@@ -79,7 +96,18 @@ public class EldervaleBootstrap : MonoBehaviour
         controller=player.AddComponent<CharacterController>(); controller.height=1.8f; controller.radius=.42f; controller.center=Vector3.up*.9f;
         var body=GameObject.CreatePrimitive(PrimitiveType.Capsule); body.name="Armored Adventurer"; body.transform.SetParent(player.transform,false); body.transform.localPosition=Vector3.up*.9f; body.transform.localScale=new Vector3(.78f,.95f,.78f); body.GetComponent<Collider>().enabled=false; SetColor(body.GetComponent<Renderer>(),new Color(.15f,.28f,.48f));
         var head=GameObject.CreatePrimitive(PrimitiveType.Sphere); head.transform.SetParent(player.transform,false); head.transform.localPosition=Vector3.up*1.92f; head.transform.localScale=Vector3.one*.48f; head.GetComponent<Collider>().enabled=false; SetColor(head.GetComponent<Renderer>(),new Color(.76f,.59f,.44f));
+        // Layered armor silhouette to replace the plain capsule placeholder.
+        var chest=GameObject.CreatePrimitive(PrimitiveType.Cube); chest.name="Steel Breastplate"; chest.transform.SetParent(player.transform,false); chest.transform.localPosition=new Vector3(0,1.12f,0); chest.transform.localScale=new Vector3(.66f,.55f,.43f); chest.GetComponent<Collider>().enabled=false; SetColor(chest.GetComponent<Renderer>(),new Color(.31f,.39f,.49f));
+        var cape=GameObject.CreatePrimitive(PrimitiveType.Cube); cape.name="Midnight Cape"; cape.transform.SetParent(player.transform,false); cape.transform.localPosition=new Vector3(0,1.05f,-.29f); cape.transform.localScale=new Vector3(.54f,.85f,.09f); cape.GetComponent<Collider>().enabled=false; SetColor(cape.GetComponent<Renderer>(),new Color(.08f,.10f,.22f));
+        for(int side=-1;side<=1;side+=2)
+        {
+            var shoulder=GameObject.CreatePrimitive(PrimitiveType.Sphere); shoulder.name="Armor Pauldron"; shoulder.transform.SetParent(player.transform,false); shoulder.transform.localPosition=new Vector3(side*.43f,1.42f,0); shoulder.transform.localScale=new Vector3(.38f,.28f,.39f); shoulder.GetComponent<Collider>().enabled=false; SetColor(shoulder.GetComponent<Renderer>(),new Color(.42f,.48f,.57f));
+            var boot=GameObject.CreatePrimitive(PrimitiveType.Cube); boot.name="Armored Boot"; boot.transform.SetParent(player.transform,false); boot.transform.localPosition=new Vector3(side*.2f,.18f,.08f); boot.transform.localScale=new Vector3(.25f,.34f,.39f); boot.GetComponent<Collider>().enabled=false; SetColor(boot.GetComponent<Renderer>(),new Color(.12f,.16f,.22f));
+        }
+        var helm=GameObject.CreatePrimitive(PrimitiveType.Sphere); helm.name="Knight Helm"; helm.transform.SetParent(player.transform,false); helm.transform.localPosition=new Vector3(0,2.05f,0); helm.transform.localScale=new Vector3(.48f,.32f,.47f); helm.GetComponent<Collider>().enabled=false; SetColor(helm.GetComponent<Renderer>(),new Color(.25f,.35f,.47f));
+        var crest=Cube("Helm Crest",Vector3.zero,new Vector3(.08f,.42f,.12f),new Color(.2f,.68f,1)); crest.transform.SetParent(player.transform,false); crest.transform.localPosition=new Vector3(0,2.27f,.03f);
         var blade=Cube("Runeblade",player.transform.position+new Vector3(.48f,1,-.35f),new Vector3(.09f,.95f,.13f),new Color(.48f,.78f,1)); blade.transform.SetParent(player.transform); blade.transform.localPosition=new Vector3(.48f,1,-.35f); blade.transform.localRotation=Quaternion.Euler(-18,0,0);
+        var bladeGlow=new GameObject("Runeblade Glow").AddComponent<Light>(); bladeGlow.type=LightType.Point; bladeGlow.color=new Color(.18f,.55f,1); bladeGlow.intensity=1.2f; bladeGlow.range=2.2f; bladeGlow.transform.SetParent(player.transform,false); bladeGlow.transform.localPosition=new Vector3(.48f,1,-.35f);
     }
 
     void BuildEnemy()
@@ -88,6 +116,11 @@ public class EldervaleBootstrap : MonoBehaviour
         var col=enemy.AddComponent<CapsuleCollider>(); col.height=1.9f; col.radius=.58f;
         enemyVisual=GameObject.CreatePrimitive(PrimitiveType.Capsule); enemyVisual.transform.SetParent(enemy.transform,false); enemyVisual.transform.localPosition=Vector3.up*.95f; enemyVisual.GetComponent<Collider>().enabled=false; SetColor(enemyVisual.GetComponent<Renderer>(),new Color(.42f,.10f,.18f));
         var eye=GameObject.CreatePrimitive(PrimitiveType.Sphere); eye.transform.SetParent(enemy.transform,false); eye.transform.localPosition=new Vector3(0,1.35f,.49f); eye.transform.localScale=Vector3.one*.24f; eye.GetComponent<Collider>().enabled=false; SetColor(eye.GetComponent<Renderer>(),new Color(1,.08f,.02f));
+        for(int side=-1;side<=1;side+=2)
+        {
+            var claw=Cube("Wraith Claw",Vector3.zero,new Vector3(.16f,.62f,.18f),new Color(.22f,.08f,.17f)); claw.transform.SetParent(enemy.transform,false); claw.transform.localPosition=new Vector3(side*.48f,.82f,.05f); claw.transform.localRotation=Quaternion.Euler(0,0,side*18);
+        }
+        var aura=new GameObject("Wraith Aura").AddComponent<Light>(); aura.type=LightType.Point; aura.color=new Color(.8f,.04f,.12f); aura.intensity=2.2f; aura.range=4.5f; aura.transform.SetParent(enemy.transform,false); aura.transform.localPosition=new Vector3(0,1,0);
     }
 
     void BuildCamera()
