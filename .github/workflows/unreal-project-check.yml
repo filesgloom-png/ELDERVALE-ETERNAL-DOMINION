@@ -23,6 +23,8 @@ jobs:
           test -s UnrealProject/Source/Eldervale/Eldervale.Build.cs
           test -s UnrealProject/Source/Eldervale/EldervaleCharacter.cpp
           test -s UnrealProject/Source/Eldervale/EldervaleGameMode.cpp
+          test -s UnrealProject/Source/Eldervale/EldervaleEnemy.h
+          test -s UnrealProject/Source/Eldervale/EldervaleEnemy.cpp
           python3 - <<'PY'
           import json
           with open("UnrealProject/ELDERVALE.uproject", encoding="utf-8") as f:
@@ -35,6 +37,8 @@ jobs:
           grep -q 'void AEldervaleCharacter::Skill()' UnrealProject/Source/Eldervale/EldervaleCharacter.cpp
           grep -q 'void AEldervaleCharacter::Dodge()' UnrealProject/Source/Eldervale/EldervaleCharacter.cpp
           grep -q 'void AEldervaleCharacter::BlockPressed()' UnrealProject/Source/Eldervale/EldervaleCharacter.cpp
+          grep -q 'OnTakeAnyDamage.AddDynamic' UnrealProject/Source/Eldervale/EldervaleEnemy.cpp
+          grep -q 'SpawnActor<AEldervaleEnemy>' UnrealProject/Source/Eldervale/EldervaleGameMode.cpp
           if grep -Eiq 'SetTimer.*Attack|InvokeRepeating.*Attack|AutoAttack|auto.?attack' UnrealProject/Source/Eldervale/EldervaleCharacter.cpp; then
             echo "Unexpected automatic attack logic found"
             exit 1
