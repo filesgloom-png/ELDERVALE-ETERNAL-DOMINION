@@ -53,6 +53,8 @@ public class EldervaleBootstrap : MonoBehaviour
         if (hpText) hpText.text = "HP " + playerHp + "/100     WRAITH " + enemyHp + "/100";
     }
 
+    void SetColor(Renderer renderer, Color color) { var shader=Shader.Find("Universal Render Pipeline/Lit"); if(shader==null) shader=Shader.Find("Standard"); renderer.material.shader=shader; renderer.material.color=color; }
+
     void BuildWorld()
     {
         RenderSettings.ambientLight = new Color(.38f, .42f, .52f);
@@ -68,15 +70,15 @@ public class EldervaleBootstrap : MonoBehaviour
     GameObject Cube(string name, Vector3 pos, Vector3 scale, Color color)
     {
         var go=GameObject.CreatePrimitive(PrimitiveType.Cube); go.name=name; go.transform.position=pos; go.transform.localScale=scale;
-        var mat=new Material(Shader.Find("Standard")); mat.color=color; mat.SetFloat("_Metallic",.18f); mat.SetFloat("_Glossiness",.38f); go.GetComponent<Renderer>().material=mat; return go;
+        var shader=Shader.Find("Universal Render Pipeline/Lit"); if(shader==null) shader=Shader.Find("Standard"); var mat=new Material(shader); mat.color=color; if(mat.HasProperty("_Metallic")) mat.SetFloat("_Metallic",.18f); if(mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness",.38f); go.GetComponent<Renderer>().material=mat; return go;
     }
 
     void BuildPlayer()
     {
         player=new GameObject("Player"); player.transform.position=new Vector3(0,1,4);
         controller=player.AddComponent<CharacterController>(); controller.height=1.8f; controller.radius=.42f; controller.center=Vector3.up*.9f;
-        var body=GameObject.CreatePrimitive(PrimitiveType.Capsule); body.name="Armored Adventurer"; body.transform.SetParent(player.transform,false); body.transform.localPosition=Vector3.up*.9f; body.transform.localScale=new Vector3(.78f,.95f,.78f); body.GetComponent<Collider>().enabled=false; body.GetComponent<Renderer>().material.color=new Color(.15f,.28f,.48f);
-        var head=GameObject.CreatePrimitive(PrimitiveType.Sphere); head.transform.SetParent(player.transform,false); head.transform.localPosition=Vector3.up*1.92f; head.transform.localScale=Vector3.one*.48f; head.GetComponent<Collider>().enabled=false; head.GetComponent<Renderer>().material.color=new Color(.76f,.59f,.44f);
+        var body=GameObject.CreatePrimitive(PrimitiveType.Capsule); body.name="Armored Adventurer"; body.transform.SetParent(player.transform,false); body.transform.localPosition=Vector3.up*.9f; body.transform.localScale=new Vector3(.78f,.95f,.78f); body.GetComponent<Collider>().enabled=false; SetColor(body.GetComponent<Renderer>(),new Color(.15f,.28f,.48f));
+        var head=GameObject.CreatePrimitive(PrimitiveType.Sphere); head.transform.SetParent(player.transform,false); head.transform.localPosition=Vector3.up*1.92f; head.transform.localScale=Vector3.one*.48f; head.GetComponent<Collider>().enabled=false; SetColor(head.GetComponent<Renderer>(),new Color(.76f,.59f,.44f));
         var blade=Cube("Runeblade",player.transform.position+new Vector3(.48f,1,-.35f),new Vector3(.09f,.95f,.13f),new Color(.48f,.78f,1)); blade.transform.SetParent(player.transform); blade.transform.localPosition=new Vector3(.48f,1,-.35f); blade.transform.localRotation=Quaternion.Euler(-18,0,0);
     }
 
@@ -84,8 +86,8 @@ public class EldervaleBootstrap : MonoBehaviour
     {
         enemy=new GameObject("Training Wraith"); enemy.transform.position=new Vector3(0,.95f,-3);
         var col=enemy.AddComponent<CapsuleCollider>(); col.height=1.9f; col.radius=.58f;
-        enemyVisual=GameObject.CreatePrimitive(PrimitiveType.Capsule); enemyVisual.transform.SetParent(enemy.transform,false); enemyVisual.transform.localPosition=Vector3.up*.95f; enemyVisual.GetComponent<Collider>().enabled=false; enemyVisual.GetComponent<Renderer>().material.color=new Color(.42f,.10f,.18f);
-        var eye=GameObject.CreatePrimitive(PrimitiveType.Sphere); eye.transform.SetParent(enemy.transform,false); eye.transform.localPosition=new Vector3(0,1.35f,.49f); eye.transform.localScale=Vector3.one*.24f; eye.GetComponent<Collider>().enabled=false; eye.GetComponent<Renderer>().material.color=new Color(1,.08f,.02f);
+        enemyVisual=GameObject.CreatePrimitive(PrimitiveType.Capsule); enemyVisual.transform.SetParent(enemy.transform,false); enemyVisual.transform.localPosition=Vector3.up*.95f; enemyVisual.GetComponent<Collider>().enabled=false; SetColor(enemyVisual.GetComponent<Renderer>(),new Color(.42f,.10f,.18f));
+        var eye=GameObject.CreatePrimitive(PrimitiveType.Sphere); eye.transform.SetParent(enemy.transform,false); eye.transform.localPosition=new Vector3(0,1.35f,.49f); eye.transform.localScale=Vector3.one*.24f; eye.GetComponent<Collider>().enabled=false; SetColor(eye.GetComponent<Renderer>(),new Color(1,.08f,.02f));
     }
 
     void BuildCamera()
