@@ -1,0 +1,17 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.7",
+  "Category": "Games",
+  "Description": "ELDERVALE: ETERNAL DOMINION - mobile dark fantasy action RPG prototype",
+  "Modules": [
+    {
+      "Name": "Eldervale",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ],
+  "TargetPlatforms": [
+    "Android",
+    "Win64"
+  ]
+}
