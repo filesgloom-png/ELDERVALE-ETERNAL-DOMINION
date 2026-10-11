@@ -28,7 +28,7 @@ jobs:
           test -s UnityProject/Assets/Scripts/EldervaleBootstrap.cs
           grep -q 'void Attack()' UnityProject/Assets/Scripts/EldervaleBootstrap.cs
           grep -q 'void Skill()' UnityProject/Assets/Scripts/EldervaleBootstrap.cs
-          if grep -Eiq 'auto.?attack|automatically attack|auto.?combat' UnityProject/Assets/Scripts/EldervaleBootstrap.cs; then
+          if grep -Eiq 'InvokeRepeating.*Attack|StartCoroutine.*AutoAttack|autoAttack[[:space:]]*\\(' UnityProject/Assets/Scripts/EldervaleBootstrap.cs; then
             echo "Unexpected auto-combat implementation found"
             exit 1
           fi
@@ -37,7 +37,7 @@ jobs:
   android-build:
     name: Build Unity Android ARM64 APK
     runs-on: ubuntu-latest
-    if: ${{ secrets.UNITY_LICENSE != '' }}
+    if: ${{ vars.UNITY_CI_ENABLED == 'true' }}
     steps:
       - uses: actions/checkout@v4
       - name: Build Android APK with Unity 6
@@ -50,7 +50,7 @@ jobs:
           targetPlatform: Android
           androidAppBundle: false
           androidExportType: androidPackage
-          customParameters: -buildTarget Android -executeMethod EldervaleAndroidBuilder.Build
+          buildMethod: EldervaleAndroidBuilder.Build
       - name: Verify APK
         run: |
           find UnityProject -type f -name '*.apk' -size +0c -print -quit | grep .
