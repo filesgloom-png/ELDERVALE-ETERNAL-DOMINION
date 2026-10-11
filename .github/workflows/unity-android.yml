@@ -1,0 +1,62 @@
+name: ELDERVALE Eternal Dominion Unity Android CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'UnityProject/**'
+      - '.github/workflows/unity-android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eldervale-unity-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  project-check:
+    name: Check Unity project structure and manual-combat rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate required Unity files
+        run: |
+          test -s UnityProject/ProjectSettings/ProjectVersion.txt
+          test -s UnityProject/Packages/manifest.json
+          test -s UnityProject/Assets/Scripts/EldervaleBootstrap.cs
+          grep -q 'void Attack()' UnityProject/Assets/Scripts/EldervaleBootstrap.cs
+          grep -q 'void Skill()' UnityProject/Assets/Scripts/EldervaleBootstrap.cs
+          if grep -Eiq 'auto.?attack|automatically attack|auto.?combat' UnityProject/Assets/Scripts/EldervaleBootstrap.cs; then
+            echo "Unexpected auto-combat implementation found"
+            exit 1
+          fi
+          echo "Unity project structure and manual-only combat checks passed."
+
+  android-build:
+    name: Build Unity Android ARM64 APK
+    runs-on: ubuntu-latest
+    if: ${{ secrets.UNITY_LICENSE != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Android APK with Unity 6
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          projectPath: UnityProject
+          unityVersion: 6000.0.60f1
+          targetPlatform: Android
+          androidAppBundle: false
+          androidExportType: androidPackage
+          customParameters: -buildTarget Android -executeMethod EldervaleAndroidBuilder.Build
+      - name: Verify APK
+        run: |
+          find UnityProject -type f -name '*.apk' -size +0c -print -quit | grep .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ELDERVALE-ETERNAL-DOMINION-Unity-Android-ARM64
+          path: UnityProject/**/*.apk
+          if-no-files-found: error
+          retention-days: 14
