@@ -1,0 +1,42 @@
+name: ELDERVALE Unreal Engine 5 Project Check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'UnrealProject/**'
+      - '.github/workflows/unreal-project-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate UE5 project scaffold and manual combat
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate project metadata and source files
+        run: |
+          test -s UnrealProject/ELDERVALE.uproject
+          test -s UnrealProject/Source/Eldervale/Eldervale.Build.cs
+          test -s UnrealProject/Source/Eldervale/EldervaleCharacter.cpp
+          test -s UnrealProject/Source/Eldervale/EldervaleGameMode.cpp
+          python3 - <<'PY'
+          import json
+          with open("UnrealProject/ELDERVALE.uproject", encoding="utf-8") as f:
+              project = json.load(f)
+          assert project["EngineAssociation"] == "5.7"
+          assert any(m["Name"] == "Eldervale" for m in project["Modules"])
+          print("UE project descriptor is valid.")
+          PY
+          grep -q 'void AEldervaleCharacter::Attack()' UnrealProject/Source/Eldervale/EldervaleCharacter.cpp
+          grep -q 'void AEldervaleCharacter::Skill()' UnrealProject/Source/Eldervale/EldervaleCharacter.cpp
+          grep -q 'void AEldervaleCharacter::Dodge()' UnrealProject/Source/Eldervale/EldervaleCharacter.cpp
+          grep -q 'void AEldervaleCharacter::BlockPressed()' UnrealProject/Source/Eldervale/EldervaleCharacter.cpp
+          if grep -Eiq 'SetTimer.*Attack|InvokeRepeating.*Attack|AutoAttack|auto.?attack' UnrealProject/Source/Eldervale/EldervaleCharacter.cpp; then
+            echo "Unexpected automatic attack logic found"
+            exit 1
+          fi
+          echo "UE5 scaffold and manual-only combat checks passed."
