@@ -1,6 +1,8 @@
 #include "EldervaleGameMode.h"
 #include "EldervaleCharacter.h"
 #include "EldervaleEnemy.h"
+#include "Engine/StaticMeshActor.h"
+#include "GameFramework/PlayerController.h"
 
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
