@@ -16,6 +16,13 @@ public class EldervaleBootstrap : MonoBehaviour
     Vector2 joystickStart;
     Rect joystickRect = new Rect(35, Screen.height - 205, 170, 170);
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    static void Boot()
+    {
+        var root = new GameObject("ELDERVALE Runtime");
+        root.AddComponent<EldervaleBootstrap>();
+    }
+
     void Start()
     {
         Application.targetFrameRate = 60;
