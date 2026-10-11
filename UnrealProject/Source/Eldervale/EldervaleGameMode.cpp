@@ -1,6 +1,7 @@
 #include "EldervaleGameMode.h"
 #include "EldervaleCharacter.h"
-#include "Engine/StaticMeshActor.h"
+#include "EldervaleEnemy.h"
+
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "GameFramework/PlayerStart.h"
@@ -19,7 +20,6 @@ void AEldervaleGameMode::BeginPlay()
     if (!World) return;
 
     UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
-    UStaticMesh* SphereMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere.Sphere"));
     if (CubeMesh)
     {
         AStaticMeshActor* Floor = World->SpawnActor<AStaticMeshActor>(FVector(0, 0, -60), FRotator::ZeroRotator);
@@ -41,15 +41,5 @@ void AEldervaleGameMode::BeginPlay()
             }
         }
     }
-    if (SphereMesh)
-    {
-        AStaticMeshActor* Enemy = World->SpawnActor<AStaticMeshActor>(FVector(300, 0, 100), FRotator::ZeroRotator);
-        if (Enemy)
-        {
-            Enemy->Tags.Add(FName("Enemy"));
-            Enemy->GetStaticMeshComponent()->SetStaticMesh(SphereMesh);
-            Enemy->SetActorScale3D(FVector(1.1f, 1.1f, 1.8f));
-            Enemy->GetStaticMeshComponent()->SetCollisionProfileName(TEXT("Pawn"));
-        }
-    }
+    World->SpawnActor<AEldervaleEnemy>(FVector(300, 0, 100), FRotator::ZeroRotator);
 }
