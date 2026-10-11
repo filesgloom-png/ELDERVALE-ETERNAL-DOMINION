@@ -1,0 +1,24 @@
+; ELDERVALE: ETERNAL DOMINION — Godot 4.5.1
+config_version=5
+
+[application]
+config/name="ELDERVALE: ETERNAL DOMINION"
+config/description="A third-person 3D fantasy action MMORPG prototype for Android. Manual combat only."
+run/main_scene="res://scenes/main_3d.tscn"
+
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/window_width_override=960
+window/size/window_height_override=540
+window/stretch/mode="canvas_items"
+window/handheld/orientation=1
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
+environment/defaults/default_clear_color=Color(0.035, 0.047, 0.065, 1)
+
+[physics]
+3d/default_gravity=9.8
