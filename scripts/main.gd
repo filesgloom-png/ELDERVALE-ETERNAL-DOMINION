@@ -230,7 +230,7 @@ func _build_hud() -> void:
 	enemy_label.add_theme_font_size_override("font_size", 17)
 	layer.add_child(enemy_label)
 
-func _make_button(parent: Control, text_value: String, offset: Vector2, button_size: Vector2) -> Button:
+func _make_button(parent: Node, text_value: String, offset: Vector2, button_size: Vector2) -> Button:
 	var button := Button.new()
 	button.text = text_value
 	button.size = button_size
